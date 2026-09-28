@@ -1,18 +1,12 @@
 [project]
 name = "farfield-python"
 version = "0.1.0"
-description = "Add your description here"
+description = "Python port of Farfield's Codex app-server and desktop IPC SDK"
 readme = "README.md"
-authors = [
-    { name = "t4we fan", email = "t4wefan@qq.com" }
-]
 requires-python = ">=3.11"
 dependencies = [
     "jsonschema>=4.26.0",
 ]
-
-[project.scripts]
-farfield-python = "farfield_python:main"
 
 [build-system]
 requires = ["uv_build>=0.12.3,<0.13.0"]

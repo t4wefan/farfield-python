@@ -1,0 +1,25 @@
+"""Generated faithful snapshot of Farfield's exhaustive app-server mapping."""
+
+import json
+from importlib.resources import files
+
+_maps = json.loads(files("farfield_python").joinpath("method_map.json").read_text())
+_methods = json.loads(files("farfield_python").joinpath("methods.json").read_text())
+
+CODEX_CLIENT_REQUEST_METHOD_MAP = _maps["CODEX_CLIENT_REQUEST_METHOD_MAP"]
+CODEX_CLIENT_NOTIFICATION_METHOD_MAP = _maps["CODEX_CLIENT_NOTIFICATION_METHOD_MAP"]
+CODEX_SERVER_REQUEST_METHOD_MAP = _maps["CODEX_SERVER_REQUEST_METHOD_MAP"]
+CODEX_SERVER_NOTIFICATION_METHOD_MAP = _maps["CODEX_SERVER_NOTIFICATION_METHOD_MAP"]
+APP_SERVER_CLIENT_REQUEST_METHODS = _methods["APP_SERVER_CLIENT_REQUEST_METHODS"]
+APP_SERVER_CLIENT_NOTIFICATION_METHODS = _methods["APP_SERVER_CLIENT_NOTIFICATION_METHODS"]
+APP_SERVER_SERVER_REQUEST_METHODS = _methods["APP_SERVER_SERVER_REQUEST_METHODS"]
+APP_SERVER_SERVER_NOTIFICATION_METHODS = _methods["APP_SERVER_SERVER_NOTIFICATION_METHODS"]
+
+for methods, mapping in (
+    (APP_SERVER_CLIENT_REQUEST_METHODS, CODEX_CLIENT_REQUEST_METHOD_MAP),
+    (APP_SERVER_CLIENT_NOTIFICATION_METHODS, CODEX_CLIENT_NOTIFICATION_METHOD_MAP),
+    (APP_SERVER_SERVER_REQUEST_METHODS, CODEX_SERVER_REQUEST_METHOD_MAP),
+    (APP_SERVER_SERVER_NOTIFICATION_METHODS, CODEX_SERVER_NOTIFICATION_METHOD_MAP),
+):
+    if set(methods) != set(mapping):
+        raise RuntimeError("Farfield app-server method map differs from protocol manifest")
