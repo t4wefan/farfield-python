@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import json
 import struct
+import sys
 from collections.abc import Callable
 from typing import Any
 from uuid import uuid4
@@ -59,7 +60,16 @@ class DesktopIpcClient:
         if self._writer is not None:
             raise DesktopIpcError("IPC client is already connected")
         try:
-            self._reader, self._writer = await asyncio.open_unix_connection(self.socket_path)
+            if sys.platform == "win32":
+                # Node's net.createConnection(path) accepts a Windows named pipe.
+                # ProactorEventLoop provides its asyncio equivalent.
+                loop = asyncio.get_running_loop()
+                reader = asyncio.StreamReader()
+                protocol = asyncio.StreamReaderProtocol(reader)
+                transport, _ = await loop.create_pipe_connection(lambda: protocol, self.socket_path)
+                self._reader, self._writer = reader, asyncio.StreamWriter(transport, protocol, reader, loop)
+            else:
+                self._reader, self._writer = await asyncio.open_unix_connection(self.socket_path)
         except OSError as exc:
             raise DesktopIpcError(str(exc)) from exc
         self._reader_task = asyncio.create_task(self._read_loop())

@@ -3,6 +3,8 @@ name = "farfield-python"
 version = "0.1.0"
 description = "Python port of Farfield's Codex app-server and desktop IPC SDK"
 readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
 requires-python = ">=3.11"
 dependencies = [
     "jsonschema>=4.26.0",

@@ -425,6 +425,7 @@ def parse_app_server_collaboration_mode_list_response(value: Any) -> dict:
 
 
 def parse_app_server_start_thread_response(value: Any) -> dict:
+    value = parse_farfield_schema(value, "AppServerStartThreadResponseSchema", context="AppServerStartThreadResponse")
     obj = _obj(value, "AppServerStartThreadResponse")
     parse_app_server_list_threads_response({"data": [obj.get("thread")]})
     return obj
