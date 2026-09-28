@@ -21,7 +21,7 @@ from .method_map import (
     CODEX_CLIENT_NOTIFICATION_METHOD_MAP, CODEX_CLIENT_REQUEST_METHOD_MAP,
     CODEX_SERVER_NOTIFICATION_METHOD_MAP, CODEX_SERVER_REQUEST_METHOD_MAP,
 )
-from .modern import METHOD_VERSIONS, ModernCodexFollower, ModernDesktopIpcClient, ipc_socket_candidates
+from .modern import METHOD_VERSIONS, ModernCodexFollower, ModernDesktopIpcClient, ipc_socket_candidates, parse_modern_ipc_frame
 from .protocol import (
     parse_app_server_collaboration_mode_list_response,
     parse_app_server_get_account_rate_limits_response, parse_app_server_list_models_response,

@@ -6,7 +6,16 @@ import tempfile
 
 import pytest
 
-from farfield_python import DesktopIpcError, ModernCodexFollower, ModernDesktopIpcClient, ipc_socket_candidates
+from farfield_python import DesktopIpcError, ModernCodexFollower, ModernDesktopIpcClient, ipc_socket_candidates, parse_modern_ipc_frame
+
+
+def test_current_router_discovery_envelope():
+    frame = {"type": "client-discovery-request", "requestId": "outer", "request": {
+        "type": "request", "sourceClientId": "other", "method": "thread-owner-discovery",
+        "version": 1, "params": {"conversationId": "t", "hostId": "local"}}}
+    assert parse_modern_ipc_frame(frame) is frame
+    with pytest.raises(Exception):
+        parse_modern_ipc_frame({**frame, "requestId": None})
 
 
 async def read_frame(reader):

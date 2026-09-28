@@ -39,6 +39,22 @@ METHOD_VERSIONS = {
 }
 
 
+def parse_modern_ipc_frame(value: object) -> dict:
+    """Validate current Desktop frames, including router discovery envelopes.
+
+    The historical Farfield schema expects a nested requestId on discovery
+    requests; current routers put it on the outer envelope. Normalize only
+    for validation and return the original frame unchanged.
+    """
+    if isinstance(value, dict) and value.get("type") == "client-discovery-request":
+        request = value.get("request")
+        if isinstance(request, dict) and "requestId" not in request:
+            normalized = {**value, "request": {**request, "requestId": value.get("requestId")}}
+            parse_ipc_frame(normalized)
+            return value
+    return parse_ipc_frame(value)
+
+
 def ipc_socket_candidates(*, codex_home: str | None = None) -> list[str]:
     """Prefer the current Codex-home bus, then the legacy temporary bus."""
     if sys.platform == "win32":
@@ -67,16 +83,7 @@ class ModernDesktopIpcClient(DesktopIpcClient):
         raise DesktopIpcError("No Codex IPC socket accepted a connection: " + "; ".join(failures))
 
     def _parse_frame(self, value: object) -> dict:
-        # Recent bus discovery envelopes may omit the nested requestId. The
-        # historical Farfield schema requires one; preserve its parser while
-        # accepting the newer envelope only in this opt-in client.
-        if isinstance(value, dict) and value.get("type") == "client-discovery-request":
-            request = value.get("request")
-            if isinstance(request, dict) and "requestId" not in request:
-                normalized = {**value, "request": {**request, "requestId": value.get("requestId")}}
-                parse_ipc_frame(normalized)
-                return value
-        return parse_ipc_frame(value)
+        return parse_modern_ipc_frame(value)
 
     async def initialize(self, _user_agent: str, *, client_type: str = "aa-bridge") -> dict:
         return await self._request({
