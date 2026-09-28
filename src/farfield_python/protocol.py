@@ -99,7 +99,7 @@ def _apply_defaults(value: Any, shape: dict, root: dict) -> Any:
             target = target[part]
         return _apply_defaults(value, target, root)
     for branch in shape.get("anyOf", []):
-        if Draft7Validator({**root, **branch}).is_valid(value):
+        if Draft7Validator({"definitions": root.get("definitions", {}), **branch}).is_valid(value):
             return _apply_defaults(value, branch, root)
     if isinstance(value, dict) and shape.get("type") == "object":
         result = value.copy()
@@ -403,6 +403,13 @@ def parse_app_server_list_threads_response(value: Any) -> dict:
 
 
 def parse_app_server_read_thread_response(value: Any) -> dict:
+    # The exported protocol helper validates the generated Codex shape first.
+    parse_generated(value, "v2/ThreadReadResponse", context="GeneratedAppServerReadThreadResponse")
+    return parse_app_server_read_thread_result(value)
+
+
+def parse_app_server_read_thread_result(value: Any) -> dict:
+    """Subset validator used by AppServerClient, matching its Zod schema."""
     obj = _obj(value, "AppServerReadThreadResponse")
     obj = obj.copy()
     obj["thread"] = parse_thread_conversation_state(obj.get("thread"))

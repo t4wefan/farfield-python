@@ -22,11 +22,13 @@ async def test_follower_actions_and_template_override():
     assert params["turnStartParams"] == {"threadId": "thread", "cwd": "/tmp", "input": [{"type": "text", "text": "new"}], "attachments": [], "model": "gpt"}
     assert params["isSteering"] is True
     assert options == {"target_client_id": "owner", "version": 1}
+    await service.send_message(thread_id="thread", owner_client_id="owner", text="nulls", model=None, effort=None, collaboration_mode=None)
+    assert {key: ipc.calls[1][1]["turnStartParams"][key] for key in ("model", "effort", "collaborationMode")} == {"model": None, "effort": None, "collaborationMode": None}
     await service.submit_user_input(thread_id="thread", owner_client_id="owner", request_id=7, response={"answers": {"q": {"answers": ["A"]}}})
     await service.submit_command_approval_decision(thread_id="thread", owner_client_id="owner", request_id=8, response={"decision": "acceptForSession"})
     await service.submit_file_approval_decision(thread_id="thread", owner_client_id="owner", request_id=9, response={"decision": "decline"})
     await service.set_collaboration_mode(thread_id="thread", owner_client_id="owner", collaboration_mode={"mode": "plan", "settings": {}})
     await service.interrupt(thread_id="thread", owner_client_id="owner")
-    assert [call[0] for call in ipc.calls[1:]] == ["thread-follower-submit-user-input", "thread-follower-command-approval-decision", "thread-follower-file-approval-decision", "thread-follower-set-collaboration-mode", "thread-follower-interrupt-turn"]
+    assert [call[0] for call in ipc.calls[2:]] == ["thread-follower-submit-user-input", "thread-follower-command-approval-decision", "thread-follower-file-approval-decision", "thread-follower-set-collaboration-mode", "thread-follower-interrupt-turn"]
     with pytest.raises(ProtocolValidationError):
         await service.submit_file_approval_decision(thread_id="thread", owner_client_id="owner", request_id=9, response={"decision": "wrong"})

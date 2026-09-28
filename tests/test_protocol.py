@@ -6,7 +6,7 @@ from farfield_python import (
     ProtocolValidationError, apply_strict_patch, find_latest_turn_params_template,
     parse_command_execution_request_approval_response, parse_ipc_frame,
     parse_thread_conversation_state, parse_thread_stream_patch,
-    reduce_thread_stream_events,
+    parse_user_input_response_payload, reduce_thread_stream_events,
 )
 
 
@@ -48,3 +48,9 @@ def test_approval_decision_strictness():
     assert parse_command_execution_request_approval_response(payload) == payload
     with pytest.raises(ProtocolValidationError):
         parse_command_execution_request_approval_response({"decision": "accept", "unexpected": True})
+    assert parse_user_input_response_payload({"decision": "approved_for_session"}) == {"decision": "approved_for_session"}
+
+
+def test_default_user_content_matches_upstream_zod():
+    parsed = parse_thread_conversation_state({"id": "thread", "turns": [{"status": "completed", "items": [{"type": "userMessage", "id": "item"}]}]})
+    assert parsed["turns"][0]["items"][0]["content"] == []

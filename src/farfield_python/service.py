@@ -8,6 +8,8 @@ from .protocol import (parse_command_execution_request_approval_response,
                        parse_file_change_request_approval_response,
                        parse_tool_request_user_input_response_payload)
 
+_UNSET = object()
+
 
 class CodexMonitorService:
     def __init__(self, ipc_client: Any):
@@ -20,19 +22,19 @@ class CodexMonitorService:
     async def send_message(self, *, thread_id: str, owner_client_id: str, text: str,
                            cwd: str | None = None, is_steering: bool = False,
                            turn_start_template: dict | None = None,
-                           model: str | None = None, effort: str | None = None,
-                           collaboration_mode: dict | None = None) -> None:
+                           model: str | None | object = _UNSET, effort: str | None | object = _UNSET,
+                           collaboration_mode: dict | None | object = _UNSET) -> None:
         text = text.strip()
         if not text:
             raise ValueError("Message text is required")
         template = turn_start_template
         params = {**template, "threadId": thread_id, "input": [{"type": "text", "text": text}],
-                  "attachments": template.get("attachments") if isinstance(template.get("attachments"), list) else []} if template else {
+                  "attachments": template.get("attachments") if isinstance(template.get("attachments"), list) else []} if template is not None else {
                       "threadId": thread_id, "input": [{"type": "text", "text": text}], "attachments": []}
         if cwd is not None:
             params["cwd"] = cwd
         for key, value in (("model", model), ("effort", effort), ("collaborationMode", collaboration_mode)):
-            if value is not None:
+            if value is not _UNSET:
                 params[key] = value
         await self.ipc_client.send_request_and_wait("thread-follower-start-turn", {
             "conversationId": thread_id, "turnStartParams": params, "isSteering": bool(is_steering)

@@ -8,7 +8,7 @@ from .app_server_transport import ChildProcessAppServerTransport
 from .protocol import (
     _field, _issue, _obj, parse_app_server_collaboration_mode_list_response,
     parse_app_server_get_account_rate_limits_response, parse_app_server_list_models_response,
-    parse_app_server_list_threads_response, parse_app_server_read_thread_response,
+    parse_app_server_list_threads_response, parse_app_server_read_thread_result,
     parse_app_server_start_thread_response, parse_generated, parse_turn_start_params,
     parse_user_input_response_payload,
 )
@@ -54,7 +54,7 @@ class AppServerClient:
 
     async def read_thread(self, thread_id: str, include_turns: bool = True) -> dict:
         result = await self.transport.request("thread/read", {"threadId": thread_id, "includeTurns": include_turns})
-        return parse_app_server_read_thread_response(result)
+        return parse_app_server_read_thread_result(result)
 
     async def list_models(self, limit: int = 100) -> dict:
         return parse_app_server_list_models_response(await self.transport.request("model/list", {"limit": limit}))
@@ -109,4 +109,4 @@ class AppServerClient:
         if not thread_id or type(persist_extended_history) is not bool:
             _issue("AppServerResumeThreadRequest", "", "Invalid threadId or persistExtendedHistory")
         result = await self.transport.request("thread/resume", {"threadId": thread_id, "persistExtendedHistory": persist_extended_history})
-        return parse_app_server_read_thread_response(result)
+        return parse_app_server_read_thread_result(result)
