@@ -102,7 +102,7 @@ class DesktopIpcClient:
                 if size > MAX_FRAME_SIZE_BYTES:
                     raise DesktopIpcError(f"IPC frame exceeded limit ({size} > {MAX_FRAME_SIZE_BYTES})")
                 data = await self._reader.readexactly(size)
-                frame = parse_ipc_frame(json.loads(data))
+                frame = self._parse_frame(json.loads(data))
                 for listener in tuple(self._frame_listeners):
                     listener(frame)
                 kind = frame["type"]
@@ -136,6 +136,9 @@ class DesktopIpcClient:
             if writer is not None:
                 writer.close()
             self._state(False, "IPC socket closed")
+
+    def _parse_frame(self, value: object) -> dict:
+        return parse_ipc_frame(value)
 
     async def send_broadcast(self, method: str, params: Any, *, target_client_id: str | None = None, version: int | None = None) -> None:
         frame = {"type": "broadcast", "method": method, "params": params, "sourceClientId": self.client_id or INITIALIZING_CLIENT_ID}
